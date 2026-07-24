@@ -1,0 +1,59 @@
+-- =====================================================================
+-- Sistema de Cobranças — schema completo (referência / versionamento)
+-- Projeto Supabase: "Banco de Dados AF" (gfjfvndueljxhwlghhpi)
+-- Prefixo cob_ para conviver com as tabelas legadas (parcelas/reembolsos).
+-- Já aplicado via MCP (migrations: cob_schema_tables, cob_views_functions_triggers,
+-- cob_rls_policies, cob_cobrancas_view). Mantido aqui como fonte da verdade.
+-- =====================================================================
+
+-- ---------- TABELAS ----------
+-- cob_clientes(id, nome, telefone[dígitos], email, kommo_lead_url[NOT NULL],
+--              kommo_lead_id[extraído], created_at, updated_at)
+-- cob_contratos(id, cliente_id[FK], plano{Protagonista|Embaixador|Premium|Digital},
+--              valor_total, valor_entrada, entrada_paga, entrada_metodo,
+--              forma_pagamento{pix|cartao|misto}, plataforma{guru|kiwify|braip|pix_direto},
+--              numero_parcelas, data_venda, data_inicio_plano, data_fim_plano,
+--              contrato_anterior_id[FK self], vendedor, status{ativo|pausado|encerrado|reembolsado})
+-- cob_parcelas(id[bigserial], contrato_id[FK], numero_parcela, valor_previsto,
+--              valor_pago, data_vencimento, data_pagamento, metodo_pagamento{pix|cartao|boleto},
+--              cancelada_por_reembolso, observacao, UNIQUE(contrato_id,numero_parcela))
+--              -> SEM coluna status (derivada na view)
+-- cob_reembolsos(id, contrato_id[FK], data_solicitacao, tipo{total|parcial},
+--              motivo{lista fechada de 7}, motivo_detalhe, status{solicitado|em_negociacao|
+--              revertido|aprovado|concluido}, valor_devolvido_cliente, custo_efetivo_empresa)
+-- cob_reembolso_parcelas(id[bigserial], reembolso_id[FK], numero_parcela,
+--              valor_previsto, valor_pago, data_vencimento, data_pagamento)
+--
+-- Reaproveita a tabela existente public.closers como lista fechada de vendedores.
+
+-- ---------- REGRA DE STATUS DA PARCELA (view, não coluna) ----------
+-- Escolha: 'vencido' depende de CURRENT_DATE (função não-imutável), então NÃO pode
+-- ser coluna GENERATED STORED. A regra vive na view cob_parcelas_v; a base não tem
+-- coluna status, o que também garante que a aplicação nunca a escreva diretamente.
+--   pago      -> valor_pago >= valor_previsto
+--   cancelado -> cancelada_por_reembolso = true
+--   vencido   -> data_vencimento < hoje e não pago/cancelado
+--   a_vencer  -> demais
+-- A view também expõe: saldo_aberto, dias_atraso e aging_faixa (1-15/16-30/31-60/60+).
+--
+-- cob_reembolso_parcelas_v: mesma lógica de status (pago/vencido/a_vencer).
+-- cob_cobrancas_v: parcela + status + contrato + cliente (tela de cobranças).
+
+-- ---------- FUNÇÕES E TRIGGERS ----------
+-- cob_touch_updated_at()        : mantém updated_at.
+-- cob_normalize_cliente()       : telefone só dígitos + extrai kommo_lead_id da URL.
+-- cob_gerar_parcelas()          : AFTER INSERT em cob_contratos — gera N parcelas
+--                                 (1ª = entrada na data_venda; demais mensais;
+--                                 última absorve o resto do arredondamento).
+-- cob_guard_parcela_cancelada() : bloqueia editar valor_pago de parcela cancelada.
+-- cob_cascade_reembolso()       : AFTER INSERT/UPDATE OF status em cob_reembolsos —
+--                                 ao 'aprovado'/'concluido', marca as parcelas em
+--                                 aberto como cancelada_por_reembolso (NUNCA deleta)
+--                                 e o contrato como 'reembolsado'.
+
+-- ---------- RLS (TEMPORÁRIO — sem login) ----------
+-- Todas as cob_* têm RLS habilitado com política permissiva (anon+authenticated),
+-- mesmo padrão da tabela closers. Ao adicionar Supabase Auth, trocar por políticas
+-- baseadas em auth.uid()/roles.
+
+-- O DDL executável vive no histórico de migrations do Supabase (list_migrations).

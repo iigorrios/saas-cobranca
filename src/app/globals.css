@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #0a0e0d;
+  color: #e8efec;
+}
+
+body {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Números com largura fixa — leitura financeira alinhada */
+.tabnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Scrollbar discreta e escura */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #20302b transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #20302b;
+  border-radius: 8px;
+  border: 2px solid #0a0e0d;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-panel;
+  }
+  .input {
+    @apply w-full rounded-lg border border-border bg-base px-3 py-2 text-sm text-ink
+           placeholder:text-faint outline-none transition-colors
+           focus:border-brand/60 focus:ring-1 focus:ring-brand/30;
+  }
+  .label {
+    @apply mb-1 block text-2xs font-medium uppercase tracking-wide text-faint;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm
+           font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-[#07100b] hover:bg-brand-hover;
+  }
+  .btn-ghost {
+    @apply btn border border-border bg-transparent text-ink hover:bg-panel-2;
+  }
+  .btn-danger {
+    @apply btn border border-danger/40 bg-danger/10 text-danger-text hover:bg-danger/20;
+  }
+  .th {
+    @apply px-3 py-2 text-left text-2xs font-semibold uppercase tracking-wide text-faint;
+  }
+  .td {
+    @apply px-3 py-2.5 text-sm text-ink align-middle;
+  }
+}
