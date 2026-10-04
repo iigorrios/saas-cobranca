@@ -75,12 +75,12 @@ export default function ContratoModal({
   useEffect(() => {
     if (!open) return;
     supabase
-      .from("cob_clientes")
+      .schema("legado" as "public").from("cob_clientes")
       .select("*")
       .order("nome")
       .then(({ data }) => setClientes((data as Cliente[]) ?? []));
     supabase
-      .from("closers")
+      .schema("legado" as "public").from("closers")
       .select("id,nome")
       .order("nome")
       .then(({ data }) => setClosers((data as Closer[]) ?? []));
@@ -90,7 +90,7 @@ export default function ContratoModal({
   useEffect(() => {
     if (!f.cliente_id) return setContratosCliente([]);
     supabase
-      .from("cob_contratos")
+      .schema("legado" as "public").from("cob_contratos")
       .select("*")
       .eq("cliente_id", f.cliente_id)
       .order("data_venda", { ascending: false })
@@ -115,7 +115,7 @@ export default function ContratoModal({
     if (entrada > total) return setErr("A entrada não pode ser maior que o valor total.");
     if (!f.data_fim_plano) return setErr("Informe a data de fim do plano.");
     setSaving(true);
-    const { error } = await supabase.from("cob_contratos").insert({
+    const { error } = await supabase.schema("legado" as "public").from("cob_contratos").insert({
       cliente_id: f.cliente_id,
       plano: f.plano,
       valor_total: total,

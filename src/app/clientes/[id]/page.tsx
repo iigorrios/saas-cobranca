@@ -20,8 +20,8 @@ export default function ClienteDetalhe({ params }: { params: Promise<{ id: strin
   async function load() {
     setLoading(true);
     const [{ data: cl }, { data: cts }] = await Promise.all([
-      supabase.from("cob_clientes").select("*").eq("id", id).single(),
-      supabase.from("cob_contratos").select("*").eq("cliente_id", id).order("data_venda", { ascending: false }),
+      supabase.schema("legado" as "public").from("cob_clientes").select("*").eq("id", id).single(),
+      supabase.schema("legado" as "public").from("cob_contratos").select("*").eq("cliente_id", id).order("data_venda", { ascending: false }),
     ]);
     setCliente((cl as Cliente) ?? null);
     const contratosArr = (cts as Contrato[]) ?? [];

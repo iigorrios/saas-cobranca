@@ -261,7 +261,7 @@ function PagamentoModal({
       data_pagamento: saldoRestante <= 0.01 ? data : parcela!.data_pagamento,
     };
     if (obs.trim()) patch.observacao = obs.trim();
-    const { error } = await supabase.from("cob_parcelas").update(patch).eq("id", parcela!.id);
+    const { error } = await supabase.schema("legado" as "public").from("cob_parcelas").update(patch).eq("id", parcela!.id);
     setSaving(false);
     if (error) return setErr(error.message);
     onSaved();

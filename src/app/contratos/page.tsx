@@ -18,7 +18,7 @@ export default function ContratosPage() {
 
   async function load() {
     const { data } = await supabase
-      .from("cob_contratos")
+      .schema("legado" as "public").from("cob_contratos")
       .select("*, cob_clientes(nome)")
       .order("data_venda", { ascending: false });
     setRows((data as Row[]) ?? []);

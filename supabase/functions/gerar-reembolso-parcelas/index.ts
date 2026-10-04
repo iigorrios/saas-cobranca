@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
     const { data: r, error: er } = await supabase
-      .from("cob_reembolsos")
+      .schema("legado").from("cob_reembolsos")
       .select("data_solicitacao")
       .eq("id", reembolso_id)
       .single();
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
         headers: { ...cors, "Content-Type": "application/json" },
       });
 
-    await supabase.from("cob_reembolso_parcelas").delete().eq("reembolso_id", reembolso_id);
+    await supabase.schema("legado").from("cob_reembolso_parcelas").delete().eq("reembolso_id", reembolso_id);
 
     const venc1 = addDays(r.data_solicitacao, 15);
     let rows: Array<Record<string, unknown>>;
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       ];
     }
     const { data: inserted, error: ei } = await supabase
-      .from("cob_reembolso_parcelas")
+      .schema("legado").from("cob_reembolso_parcelas")
       .insert(rows)
       .select();
     if (ei)

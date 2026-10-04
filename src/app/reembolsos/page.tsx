@@ -44,7 +44,7 @@ export default function ReembolsosPage() {
 
   async function load() {
     const { data } = await supabase
-      .from("cob_reembolsos")
+      .schema("legado" as "public").from("cob_reembolsos")
       .select("*, cob_contratos(valor_total, plano, cob_clientes(nome, kommo_lead_url))")
       .order("data_solicitacao", { ascending: false });
     setRows((data as Row[]) ?? []);
@@ -71,7 +71,7 @@ export default function ReembolsosPage() {
       )
     )
       return;
-    const { error } = await supabase.from("cob_reembolsos").update({ status: novo }).eq("id", r.id);
+    const { error } = await supabase.schema("legado" as "public").from("cob_reembolsos").update({ status: novo }).eq("id", r.id);
     if (error) alert(error.message);
     else load();
   }
@@ -236,7 +236,7 @@ function NovoReembolsoModal({
     setDetalhe(""); setDataSolic(todayISO()); setValorDevolvido(""); setCusto("");
     setNumParcelas("1"); setSug(null); setErr("");
     supabase
-      .from("cob_contratos")
+      .schema("legado" as "public").from("cob_contratos")
       .select("id, plano, valor_total, cob_clientes(nome)")
       .neq("status", "reembolsado")
       .order("data_venda", { ascending: false })
@@ -274,7 +274,7 @@ function NovoReembolsoModal({
     if (motivo === "outro" && !detalhe.trim()) return setErr("Descreva o motivo em 'detalhe'.");
     setSaving(true);
     const { data, error } = await supabase
-      .from("cob_reembolsos")
+      .schema("legado" as "public").from("cob_reembolsos")
       .insert({
         contrato_id: contratoId,
         data_solicitacao: dataSolic,

@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
     const { data: c, error } = await supabase
-      .from("cob_contratos")
+      .schema("legado").from("cob_contratos")
       .select("valor_total, data_inicio_plano, data_fim_plano")
       .eq("id", contrato_id)
       .single();

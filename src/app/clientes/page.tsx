@@ -16,7 +16,7 @@ export default function ClientesPage() {
 
   async function load() {
     const { data } = await supabase
-      .from("cob_clientes")
+      .schema("legado" as "public").from("cob_clientes")
       .select("*")
       .order("created_at", { ascending: false });
     setClientes((data as Cliente[]) ?? []);
@@ -133,7 +133,7 @@ function NovoClienteModal({
     if (!url.trim() || !isValidUrl(url.trim()))
       return setErr("Informe uma URL válida do card no Kommo (http/https).");
     setSaving(true);
-    const { error } = await supabase.from("cob_clientes").insert({
+    const { error } = await supabase.schema("legado" as "public").from("cob_clientes").insert({
       nome: nome.trim(),
       telefone: telefone.trim() || null,
       email: email.trim() || null,
